@@ -5,8 +5,8 @@ stocker = Stocker("less stocks.txt")
 
 goodstocks = stocker.good_stocks()
 
-print(stocker.json_data)
+print(json.dumps(stocker.json_data, indent = 2))
 for stock in goodstocks:
-    stocker.buy(stock.ticker, 20, 20)
+    stocker.buy(stock.ticker, 90, 90)
 
 print(json.dumps(stocker.json_data, indent = 2))

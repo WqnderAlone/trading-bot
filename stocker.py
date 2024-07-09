@@ -43,6 +43,11 @@ class Stocker:
         price_per_share:    float   -> price per share
     """
     def buy(self, ticker, share_count, price_per_share):
+        if share_count*price_per_share > self.json_data["remaining balance"]:
+            print("not enough money")
+            raise OSError
+
+
         new_purchase = {}
         
         new_purchase["symbol"] = ticker

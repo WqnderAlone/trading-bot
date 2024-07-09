@@ -2,10 +2,5 @@
   "remaining balance": 10000,
   "initial invested balance": 2000,
   "investments": [
-    {
-      "symbol": "NVDA",
-      "shares": 20,
-      "price_per_share": 20
-    }
   ]
 }
