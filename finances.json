@@ -1,6 +1,11 @@
 {
-    "remaining balance": 999999999999999999999999999999999999999,
-    "initial invested balance": 0,
+    "remaining balance": 999999999999999999999999999999999999995,
+    "initial invested balance": 4,
     "investments": [
+        {
+            "symbol": "AAPL",
+            "shares": 2,
+            "price_per_share": 2
+        }
     ]
 }
