@@ -3,9 +3,9 @@
     "initial invested balance": 4,
     "investments": [
         {
-            "symbol": "AAPL",
-            "shares": 2,
-            "price_per_share": 2
+            "symbol": "EXAMPLE",
+            "shares": -1,
+            "price_per_share": -1
         }
     ]
 }
