@@ -5,11 +5,11 @@ class Stocker:
     def __init__(self, stockoptions = "stocks.txt", financeinfo = "finances.json"):
         # gather stock options
         f = open(stockoptions, "r+")
-        self.tickers = []
+        self.ticker_options = []
 
         for l in f:
             l = l.strip()
-            self.tickers.append(yf.Ticker(l))
+            self.ticker_options.append(yf.Ticker(l))
         f.close()
 
 
@@ -20,6 +20,18 @@ class Stocker:
         f.close()
         
     
+    def get_investments(self):
+        return self.json_data["investments"]
+
+
+    def get_investment_tickers(self):
+        out = set()
+        for d in self.json_data["investments"]:
+            out.add(d["symbol"])
+
+        return out
+
+
     """
     Iterates through all stock Tickers in filename (from instantiation) and finds those with 50 day growth rate > 200 day growth rate
 
@@ -28,11 +40,17 @@ class Stocker:
     """
     def good_stocks(self):
         out = []
-        for ticker in self.tickers:
+        for ticker in self.ticker_options:
             if self.performing_well(ticker):
                 out.append(ticker)
 
         return out
+
+
+    def get_price(self, ticker):
+        return yf.Ticker(ticker).info["currentPrice"]
+    #       print(ticker, yf.Ticker(ticker).info["currentPrice"])
+    #       print(json.dumps((yf.Ticker(ticker).info), indent = 2))
 
     """
     \"Buys\" a stock given a ticker
@@ -42,10 +60,17 @@ class Stocker:
         share_count:        int     -> the number of shares being bought
         price_per_share:    float   -> price per share
     """
-    def buy(self, ticker, share_count, price_per_share):
+    def buy(self, ticker, share_count):
+        price_per_share = self.get_price(ticker)
+
         if share_count*price_per_share > self.json_data["remaining balance"]:
-            print("not enough money")
+            print("not enough money\n" * 5)
             raise OSError
+
+        if ticker in self.get_investment_tickers():
+            print("already bought this stock\nsell first to buy more\n" * 5)
+            raise OSError
+
 
 
         new_purchase = {}
@@ -63,7 +88,22 @@ class Stocker:
         j = json.dumps(self.json_data, indent = 4)
         with open("finances.json", "w+") as f:
             print(j, file = f)
-        f.close()
+
+    def sell(self, ticker, share_count):
+        price_per_share = self.get_price(ticker)
+
+        for d in self.json_data["investments"]:
+            if d["symbol"] != ticker:
+                continue
+
+            del d
+            pass
+
+            break
+
+        print("stock not found\n" * 5)
+
+
     """
     Checks whether 50 day growth > 200 day growth 
 
@@ -73,6 +113,8 @@ class Stocker:
     Returns:
         boolean: whether the yf.Ticker is performing well
     """
+
+
     def performing_well(self, ticker):
         try:
             #calculating 6 mo avg growth rate
