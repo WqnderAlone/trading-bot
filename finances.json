@@ -7,6 +7,11 @@
             "symbol": "EXAMPLE",
             "shares": -1,
             "price_per_share": -1
+        },
+        {
+            "symbol": "BA",
+            "shares": 20,
+            "price_per_share": 20
         }
     ]
 }
