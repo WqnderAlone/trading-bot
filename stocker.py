@@ -4,6 +4,9 @@ import json
 class Stocker:
     def __init__(self, stockoptions = "stocks.txt", financeinfo = "finances.json"):
         # gather stock options
+        self.stockoptions = stockoptions
+        self.financeinfo = financeinfo
+
         f = open(stockoptions, "r+")
         self.ticker_options = []
 
@@ -18,8 +21,19 @@ class Stocker:
         self.json_data = json.load(f)
 
         f.close()
+
+        self.investments = set()
+        for investment in self.json_data["investments"]:
+            self.investments.add(investment["symbol"])
         
     
+    def write_json(self):
+        f = open(self.financeinfo, "r+")
+        f.truncate(0)
+
+        f.write(json.dumps(self.json_data, indent = 2))
+
+
     def get_investments(self):
         return self.json_data["investments"]
 
@@ -31,6 +45,21 @@ class Stocker:
 
         return out
 
+    def update_investments(self):
+        goodstocks = self.good_stocks()
+        badstocks = self.bad_stocks()
+
+        for stock in goodstocks:
+            if stock.ticker in self.investments:
+                continue
+            share_count = 1e-10 * self.json_data["remaining balance"]
+            self.buy(stock.ticker, share_count)
+            self.investments.add(stock.ticker)
+        
+        for stock in badstocks:
+            if stock.ticker in self.investments:
+                self.sell(stock.ticker)
+                self.investments.remove(stock.ticker)
 
     """
     Iterates through all stock Tickers in filename (from instantiation) and finds those with 50 day growth rate > 200 day growth rate
@@ -42,6 +71,14 @@ class Stocker:
         out = []
         for ticker in self.ticker_options:
             if self.performing_well(ticker):
+                out.append(ticker)
+
+        return out
+
+    def bad_stocks(self):
+        out = []
+        for ticker in self.ticker_options:
+            if not self.performing_well(ticker):
                 out.append(ticker)
 
         return out
@@ -85,21 +122,25 @@ class Stocker:
 
         self.json_data["initial invested balance"] += share_count*price_per_share
 
-        j = json.dumps(self.json_data, indent = 4)
+        j = json.dumps(self.json_data, indent = 2)
         with open("finances.json", "w+") as f:
             print(j, file = f)
 
-    def sell(self, ticker, share_count):
+
+
+    def sell(self, ticker):
         price_per_share = self.get_price(ticker)
 
         for d in self.json_data["investments"]:
             if d["symbol"] != ticker:
                 continue
 
-            del d
-            pass
+            self.json_data["remaining balance"] += d["shares"] * price_per_share
+            self.json_data["net profit"] += (d["shares"] * price_per_share) - (d["shares"] * d["price_per_share"])
 
-            break
+            self.json_data["investments"].remove(d)
+
+            return
 
         print("stock not found\n" * 5)
 

@@ -6,3 +6,4 @@ GOOG
 AMZN
 META
 BRK.B
+BA
