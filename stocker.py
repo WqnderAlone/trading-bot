@@ -2,12 +2,14 @@ import yfinance as yf
 import json
 
 class Stocker:
-    def __init__(self, stockoptions = "stocks.txt", financeinfo = "finances.json"):
+    def __init__(self, stockoptionsfile = "stocks.txt", financeinfofile = "finances.json"):
         # gather stock options
-        self.stockoptions = stockoptions
-        self.financeinfo = financeinfo
+        self.stockoptionsfile = stockoptionsfile
+        self.financeinfofile = financeinfofile
+        self.goodstocks = set()
+        self.badstocks = set()
 
-        f = open(stockoptions, "r+")
+        f = open(stockoptionsfile, "r+")
         self.ticker_options = []
 
         for l in f:
@@ -17,7 +19,7 @@ class Stocker:
 
 
         # gather finance information (stocks, buy price, etc)
-        f = open(financeinfo)
+        f = open(financeinfofile)
         self.json_data = json.load(f)
 
         f.close()
@@ -25,10 +27,9 @@ class Stocker:
         self.investments = set()
         for investment in self.json_data["investments"]:
             self.investments.add(investment["symbol"])
-        
-    
+
     def write_json(self):
-        f = open(self.financeinfo, "r+")
+        f = open(self.financeinfofile, "r+")
         f.truncate(0)
 
         f.write(json.dumps(self.json_data, indent = 2))
@@ -52,7 +53,7 @@ class Stocker:
         for stock in goodstocks:
             if stock.ticker in self.investments:
                 continue
-            share_count = 1e-10 * self.json_data["remaining balance"]
+            share_count = self.invest_share_count()
             self.buy(stock.ticker, share_count)
             self.investments.add(stock.ticker)
         
@@ -61,6 +62,11 @@ class Stocker:
                 self.sell(stock.ticker)
                 self.investments.remove(stock.ticker)
 
+
+    def invest_share_count(self):
+        #temporary solution
+        return 1e-10 * self.json_data["remaining balance"]
+
     """
     Iterates through all stock Tickers in filename (from instantiation) and finds those with 50 day growth rate > 200 day growth rate
 
@@ -68,18 +74,20 @@ class Stocker:
         list(yf.Ticker)
     """
     def good_stocks(self):
-        out = []
+        out = set()
         for ticker in self.ticker_options:
             if self.performing_well(ticker):
-                out.append(ticker)
+                out.add(ticker)
+                self.goodstocks.add(ticker)
 
         return out
 
     def bad_stocks(self):
-        out = []
+        out = set()
         for ticker in self.ticker_options:
-            if not self.performing_well(ticker):
-                out.append(ticker)
+            if ticker not in self.goodstocks:
+                out.add(ticker)
+                self.badstocks.add(ticker)
 
         return out
 
