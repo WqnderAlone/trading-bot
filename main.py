@@ -2,7 +2,7 @@ from stocker import Stocker
 import json
 import time
 
-stocker = Stocker("temp_stock.txt")
+stocker = Stocker("full_stock.txt")
 
 goodstocks = stocker.good_stocks()
 badstocks = stocker.bad_stocks()
